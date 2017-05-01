@@ -68,6 +68,7 @@ class ViewController: UIViewController {
         drawing.isUserInteractionEnabled = true
         drawing.addGestureRecognizer(dragTheForm)
         
+        form = drawing
         forms.append(drawing)
     }
     
@@ -77,16 +78,19 @@ class ViewController: UIViewController {
     func panGesture(gesture: UIPanGestureRecognizer) {
         switch gesture.state {
         case .began:
-            // Disable Gravity.
-            print("Began.")
-            for i in 0..<forms.count {
-                if forms[i].frame.contains(gesture.location(in: view)) {
-                    gravity.removeItem(forms[i])
-                    self.form = forms[i]
-                }
-            }
+//            // Disable Gravity.
+//            print("Began.")
+//            for i in 0..<forms.count {
+//                if forms[i].frame.contains(gesture.location(in: view)) {
+//                    gravity.removeItem(forms[i])
+//                    self.form = forms[i]
+//                }
+//            }
+            gravity.removeItem(form)
+            collision.removeItem(form)
+            elasticity.removeItem(form)
         case .changed:
-            // Make the Form.
+            // Move the Form.
 //            self.view.bringSubview(toFront: form)
 //            let translation = gesture.translation(in: self.view)
 //            form.center = CGPoint(x: form.center.x + translation.x, y: form.center.y + translation.y)
@@ -98,11 +102,13 @@ class ViewController: UIViewController {
             
             gesture.setTranslation(CGPoint.zero, in: self.view)
             
-            print("\(gesture.view!.center.x)=\(gesture.view!.center.y)")
-            print("t;: \(translation)")
+            print("\(form.center.x)=\(form.center.y)")
+            print("t: \(translation)")
         case .ended:
             // Enable gravity.
             gravity.addItem(form)
+            elasticity.addItem(form)
+            collision.addItem(form)
             print("Ended.")
         case .cancelled:
             print("Cancelled")
