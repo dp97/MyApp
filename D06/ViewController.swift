@@ -21,25 +21,26 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Pan gesture
+        // Pan gesture.
         dragTheForm = UIPanGestureRecognizer(target: self, action: #selector(self.panGesture))
         
-        // Initialize the Animator
+        // Initialize the Animator.
         animator = UIDynamicAnimator(referenceView: self.view)
         
-        // Add Gravity
+        // Add Gravity.
         gravity = UIGravityBehavior(items: forms)
         let direction = CGVector(dx: 0.0, dy: 1.0)
         gravity.gravityDirection = direction
         
-        // Add Collision
+        // Add Collision.
         collision = UICollisionBehavior(items: forms)
         collision.translatesReferenceBoundsIntoBoundary = true
         
-        // Add Ellasticity
+        // Add Ellasticity.
         elasticity = UIDynamicItemBehavior(items: forms)
         elasticity.elasticity = 0.6
         
+        // Add them to Animator.
         animator.addBehavior(elasticity)
         animator.addBehavior(collision)
         animator.addBehavior(gravity)
@@ -56,23 +57,58 @@ class ViewController: UIViewController {
         }
         let drawing = CreateForms(coordinates: touchPoint)
         self.view.addSubview(drawing)
-        forms.append(drawing)
         print("Tapped: \(touchPoint)")
         
         //GRAVITY
         gravity.addItem(drawing)
         elasticity.addItem(drawing)
         collision.addItem(drawing)
+        
+        // Adding the Pan Gesture Recognizer
         drawing.isUserInteractionEnabled = true
         drawing.addGestureRecognizer(dragTheForm)
+        
+        forms.append(drawing)
     }
+    
+    var form: CreateForms!
     
     // Move the Form on Screen
     func panGesture(gesture: UIPanGestureRecognizer) {
-        self.view.bringSubview(toFront: forms[1])
-        let translation = gesture.translation(in: self.view)
-        forms[1].center = CGPoint(x: forms[1].center.x + translation.x, y: forms[1].center.y + translation.y)
-        gesture.setTranslation(CGPoint.zero, in: self.view)
+        switch gesture.state {
+        case .began:
+            // Disable Gravity.
+            print("Began.")
+            for i in 0..<forms.count {
+                if forms[i].frame.contains(gesture.location(in: view)) {
+                    gravity.removeItem(forms[i])
+                    self.form = forms[i]
+                }
+            }
+        case .changed:
+            // Make the Form.
+//            self.view.bringSubview(toFront: form)
+//            let translation = gesture.translation(in: self.view)
+//            form.center = CGPoint(x: form.center.x + translation.x, y: form.center.y + translation.y)
+//            gesture.setTranslation(CGPoint.zero, in: self.view)
+            
+            let translation = gesture.translation(in: form)
+            
+            form.center = CGPoint(x: form.center.x + translation.x, y: form.center.y + translation.y)
+            
+            gesture.setTranslation(CGPoint.zero, in: self.view)
+            
+            print("\(gesture.view!.center.x)=\(gesture.view!.center.y)")
+            print("t;: \(translation)")
+        case .ended:
+            // Enable gravity.
+            gravity.addItem(form)
+            print("Ended.")
+        case .cancelled:
+            print("Cancelled")
+        default:
+            print("Default")
+        }
     }
 
 }
